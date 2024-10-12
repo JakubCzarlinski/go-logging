@@ -12,7 +12,7 @@ func Bubble(err error, msg string) error {
 	return fmt.Errorf("%w\n%s", err, msg)
 }
 
-func Bubblef(err error, format string, args ...interface{}) error {
+func BubbleF(err error, format string, args ...interface{}) error {
 	if err == nil || !UseLogger {
 		return fmt.Errorf(format, args...)
 	}
