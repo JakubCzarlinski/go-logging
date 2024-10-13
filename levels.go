@@ -12,12 +12,14 @@ const (
 	FATAL int = iota
 )
 
-var colours [](func(string) string) = [](func(string) string){
-	White,
-	Cyan,
-	Yellow,
-	Red,
-	RedBg,
+type ColourFunc func(string) string
+
+var colours [](ColourFunc) = [](ColourFunc){
+	White,                         // DEBUG
+	Cyan,                          // INFO
+	Yellow,                        // WARN
+	Red,                           // ERROR
+	Combine(Red, Bold, Underline), // FATAL
 }
 
 func shouldLog(level int) bool {
@@ -66,22 +68,36 @@ func ErrorBubbleF(err error, format string, args ...interface{}) error {
 }
 
 func ErrorStack(err error) error {
-	fmt.Print(createStackMessage(err.Error()))
+	fmt.Print(createStackMessage(err.Error(), colours[ERROR]))
 	return err
 }
 
 func Fatal(msg string) {
 	if !shouldLog(FATAL) {
-		return
+		panic(msg)
 	}
 	panic(format(colours[FATAL](msg)))
 }
 
 func FatalF(f string, args ...interface{}) {
 	if !shouldLog(FATAL) {
-		return
+		panic(fmt.Sprintf(f, args...))
 	}
 	panic(format(colours[FATAL](fmt.Sprintf(f, args...))))
+}
+
+func FatalBubble(err error, msg string) {
+	if !shouldLog(FATAL) {
+		panic(err)
+	}
+	panic(withBubble(FATAL, err, msg))
+}
+
+func FatalBubbleF(err error, f string, args ...interface{}) {
+	if !shouldLog(FATAL) {
+		panic(err)
+	}
+	panic(withBubbleF(FATAL, err, f, args...))
 }
 
 func withMessage(msg string, level int) {
