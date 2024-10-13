@@ -71,12 +71,17 @@ func ErrorStack(err error) error {
 }
 
 func Fatal(msg string) {
-	withMessage(msg, FATAL)
-	panic(msg)
+	if !shouldLog(FATAL) {
+		return
+	}
+	panic(format(colours[FATAL](msg)))
 }
 
-func FatalF(format string, args ...interface{}) {
-	panic(withMessageF(FATAL, format, args...))
+func FatalF(f string, args ...interface{}) {
+	if !shouldLog(FATAL) {
+		return
+	}
+	panic(format(colours[FATAL](fmt.Sprintf(f, args...))))
 }
 
 func withMessage(msg string, level int) {
