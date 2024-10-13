@@ -3,7 +3,6 @@ package logging
 import (
 	"fmt"
 	"runtime"
-	"slices"
 	"strings"
 
 	"github.com/JakubCzarlinski/go-pooling"
@@ -21,7 +20,7 @@ var stackTracePool = pooling.NewPool(func() *stackTrace {
 	return &stackTrace{callers: make([]uintptr, 50)}
 })
 
-func createStackMessage(msg string) string {
+func createStackMessage(msg string, colour ColourFunc) string {
 	// Get the stack in the stack up.
 	stack := stackTracePool.Get()
 	defer stackTracePool.Reset(stack, struct{}{})
@@ -43,10 +42,11 @@ func createStackMessage(msg string) string {
 
 	msgLines := strings.Split(msg, "\n")
 	numLines := len(msgLines)
+
+	msgLines[numLines-1] = colour(msgLines[numLines-1])
 	for i := 0; i < numLines; i++ {
 		msgLines[i] = getLinePrefix(timestamp, numCallers+numLines-i) + msgLines[i]
 	}
-	slices.Reverse(msgLines)
 	msg = strings.Join(msgLines, "\n") + "\n"
 
 	if output != "" {
